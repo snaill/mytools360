@@ -1,0 +1,7 @@
+#include "nsISupports.idl"
+
+[scriptable, uuid([!output IDL_REGISTRY_FORMAT])]
+interface I[!output PROJECT_NAME] : nsISupports
+{
+};
+
