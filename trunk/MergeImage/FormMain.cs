@@ -6,14 +6,26 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Text;
 using System.Windows.Forms;
+using System.Runtime.InteropServices;
 
 namespace MergeImage
 {
     public partial class FormMain : Form
     {
+        [DllImport("gdi32.dll", SetLastError = true)]
+        static extern bool DeleteObject(IntPtr hObject);
+
+        [DllImport("user32.dll")]
+        static extern bool GetIconInfo(IntPtr hIcon, out ICONINFO piconinfo);
+
         public FormMain()
         {
             InitializeComponent();
+
+            string strOutput = Environment.GetFolderPath(Environment.SpecialFolder.Desktop).ToString();
+            if (!strOutput.EndsWith("\\"))
+                strOutput += '\\';
+            OutTextBox.Text = strOutput + "MergeImage.bmp";
         }
 
         private void UpdateRowColumn()
@@ -30,14 +42,20 @@ namespace MergeImage
         {
             if (System.IO.File.Exists(strPath))
             {
-                if (strPath.EndsWith(".bmp", StringComparison.OrdinalIgnoreCase)
-                    || strPath.EndsWith(".ico", StringComparison.OrdinalIgnoreCase)
-                    || strPath.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase)
-                    || strPath.EndsWith(".png", StringComparison.OrdinalIgnoreCase)
-                    || strPath.EndsWith(".gif", StringComparison.OrdinalIgnoreCase))
+                if (null != GetImageFormat(strPath))
                 {
-                    if (!InListBox.Items.Contains(strPath))
-                        InListBox.Items.Add(strPath);
+                    InListBox.Items.Add(strPath);
+                }
+                else if (strPath.EndsWith(".txt", StringComparison.OrdinalIgnoreCase))
+                {
+                    System.IO.StreamReader sr = new System.IO.StreamReader(strPath, System.Text.Encoding.Default);
+                    while (!sr.EndOfStream)
+                    {
+                        string strFilename = sr.ReadLine();
+                        if (System.IO.File.Exists(strFilename) && null != GetImageFormat(strFilename))
+                            InListBox.Items.Add(strFilename);
+                    }
+                    sr.Close();
                 }
             }
             else if (System.IO.Directory.Exists(strPath))
@@ -72,6 +90,10 @@ namespace MergeImage
                 return;
             }
 
+            ImageFormat imgFormat = GetImageFormat(OutTextBox.Text);
+            if ( null == imgFormat )
+                throw new Exception("Output image format is invalid!");
+                        
             //
             UpdateRowColumn();
 
@@ -81,85 +103,111 @@ namespace MergeImage
             if ( cols == 0 )
                 return;
 
-            int nFinalWidth = 0;
-            int nFinalHeight = 0;
             ImageRow[] aImageRows = new ImageRow[ rows ];
             for (int i = 0, j = 0; i < rows; i++)
             {
                 ImageRow ir = new ImageRow();
                 aImageRows[i] = ir;
-                ir.nHeight = 0;
-                ir.nWidth = 0;
-                ir.nImageWidth = 0;
                 ir.aImages = new Image[cols];
+                ir.aImageSize = new Size[cols];
                 for (int k = 0; k < cols; k++)
                 {
                     if (j >= InListBox.Items.Count)
                         break;
 
-                    ir.aImages[k] = Image.FromFile(InListBox.Items[j].ToString());
-
-                    if (ir.aImages[k] == null)
-                        throw new Exception("Merge failed!");
-
-                    if ( k == 0 )
+                    string strPath = InListBox.Items[j].ToString();
+                    if (strPath.EndsWith(".ico", StringComparison.OrdinalIgnoreCase))
                     {
-                        ir.nWidth = ir.aImages[k].Width;
-                        ir.nHeight = ir.aImages[k].Height;
-                        ir.nImageWidth = ir.aImages[k].Width;
-                    } 
-                    else if ( AutoZoomInCheckBox.Checked )
-                    {
-                        if (ir.nImageWidth < ir.aImages[k].Width)
-                            ir.nImageWidth = ir.aImages[k].Width;
-                        if (ir.nHeight < ir.aImages[k].Height)
-                            ir.nHeight = ir.aImages[k].Height;
-                    }
-                    else if (AutoZoomOutCheckBox.Checked)
-                    {
-                        if (ir.nImageWidth > ir.aImages[k].Width)
-                            ir.nImageWidth = ir.aImages[k].Width;
-                        if (ir.nHeight > ir.aImages[k].Height)
-                            ir.nHeight = ir.aImages[k].Height;
+                        Icon icon = new Icon(strPath);
+                        ir.aImages[k] = IconToAlphaBitmap(icon);
                     }
                     else
                     {
-                        ir.nImageWidth = 0;
-                        ir.nWidth += ir.aImages[k].Width;
-                        if (ir.nHeight < ir.aImages[k].Height)
-                            ir.nHeight = ir.aImages[k].Height;
+                        ir.aImages[k] = Image.FromFile(strPath);
                     }
+                    if (ir.aImages[k] == null)
+                        throw new Exception("Merge failed!");
 
                     ir.nImageCount++;
                     j++;
                 }
+                
+                //
+                ir.nHeight = 0;
+                ir.nWidth = 0;
 
-                if (AutoZoomInCheckBox.Checked || AutoZoomOutCheckBox.Checked)
-                    ir.nWidth = ir.nImageWidth * ir.nImageCount;
+                if (AutoZoomInRadioButton.Checked)
+                {
+                    // get row width/height
+                    for (int k = 0; k < ir.nImageCount; k++)
+                    {
+                        if (ir.nHeight < ir.aImages[k].Height)
+                            ir.nHeight = ir.aImages[k].Height;
+                    }
 
+                    for (int k = 0; k < ir.nImageCount; k++)
+                    {
+                        ir.aImageSize[k] = new Size();
+                        ir.aImageSize[k].Height = ir.nHeight;
+                        ir.aImageSize[k].Width = ir.aImages[k].Width * ir.nHeight / ir.aImages[k].Height;
 
+                        ir.nWidth += ir.aImageSize[k].Width;
+                    }
+                }
+                else if (AutoZoomOutRadioButton.Checked)
+                {
+                    ir.nHeight = Int32.MaxValue;
+                    ir.nWidth = 0;
+                    int nImageWidth = Int32.MaxValue;
+                    for (int k = 0; k < ir.nImageCount; k++)
+                    {
+                        if (nImageWidth > ir.aImages[k].Width)
+                            nImageWidth = ir.aImages[k].Width;
+                        if (ir.nHeight > ir.aImages[k].Height)
+                            ir.nHeight = ir.aImages[k].Height;
+                    }
+
+                    for (int k = 0; k < ir.nImageCount; k++)
+                    {
+                        ir.aImageSize[k] = new Size();
+                        ir.aImageSize[k].Height = ir.nHeight;
+                        ir.aImageSize[k].Width = ir.aImages[k].Width * ir.nHeight / ir.aImages[k].Height;
+                        ir.nWidth += ir.aImageSize[k].Width;
+                    }
+                }
+                else if (ForceSizeRadioButton.Checked)
+                {
+                    for (int k = 0; k < ir.nImageCount; k++)
+                    {
+                        ir.aImageSize[k] = new Size();
+                        ir.aImageSize[k].Width = Int32.Parse(WidthTextBox.Text);
+                        ir.aImageSize[k].Height = Int32.Parse(HeightTextBox.Text);
+
+                        ir.nWidth += Int32.Parse(WidthTextBox.Text);
+                    }
+                    ir.nHeight = Int32.Parse(HeightTextBox.Text);
+                }
+                else
+                {
+                    for (int k = 0; k < ir.nImageCount; k++)
+                    {
+                        ir.aImageSize[k] = new Size();
+                        ir.aImageSize[k].Width = ir.aImages[k].Width;
+                        ir.aImageSize[k].Height = ir.aImages[k].Height;
+
+                        ir.nWidth += ir.aImages[k].Width;
+                        if (ir.nHeight < ir.aImages[k].Height)
+                            ir.nHeight = ir.aImages[k].Height;
+                    }
+                }
             }
 
             // set final image width/height
+            int nFinalWidth = 0;
+            int nFinalHeight = 0;
             for (int i = 0; i < aImageRows.Length; i++)
             {
                 ImageRow ir = aImageRows[i];
-                ir.nWidth = 0;
-                for (int j = 0; j < ir.nImageCount; j++)
-                {
-                    if (AutoZoomInCheckBox.Checked || AutoZoomOutCheckBox.Checked)
-                    {
-                        int desWidth = 0;
-                        int desHeight = 0;
-                        GetActualSize(ir.aImages[j], ir.nImageWidth, ir.nHeight, ref desWidth, ref desHeight);
-                        ir.nWidth += desWidth;
-                    }
-                    else
-                    {
-                        ir.nWidth += ir.aImages[j].Width;
-                    }
-                }
-
                 if (ir.nWidth > nFinalWidth)
                     nFinalWidth = ir.nWidth;
                 nFinalHeight += ir.nHeight;
@@ -175,58 +223,45 @@ namespace MergeImage
                 ImageRow ir = aImageRows[i];
                 for ( int j = 0; j < ir.nImageCount; j ++ )
                 {
-                    if (AutoZoomInCheckBox.Checked || AutoZoomOutCheckBox.Checked)
-                    {
-                        int desWidth = 0;
-                        int desHeight = 0;
-                        GetActualSize(ir.aImages[j], ir.nImageWidth, ir.nHeight, ref desWidth, ref desHeight );
-                        g.DrawImage(ir.aImages[j], x, y, (float)desWidth, (float)desHeight);
-                        x += desWidth;
-                    }
-                    else
-                    {
-                        g.DrawImage(ir.aImages[j], x, y, ir.aImages[j].Width, ir.aImages[j].Height);
-                        x += ir.aImages[j].Width;
-                    }
-
+                    g.DrawImage(ir.aImages[j], x, y, ir.aImageSize[j].Width, ir.aImageSize[j].Height);
+                    x += ir.aImageSize[j].Width;
                 }
 
                 y += ir.nHeight;
            }
-            
-            aFinalImage.Save( OutTextBox.Text );
-            MessageBox.Show( "Merge success!");
+
+           aFinalImage.Save(OutTextBox.Text, imgFormat );
+           MessageBox.Show( "Merge success!");
+
+           //
+           System.Diagnostics.Process p = new System.Diagnostics.Process();
+           p.EnableRaisingEvents = false;
+           p.StartInfo = new System.Diagnostics.ProcessStartInfo(OutTextBox.Text);
+           p.Start();
+           p.Close();
         }
 
-        private void GetActualSize( Image img, int width, int height, ref int destWidth, ref int destHeight )
+        private ImageFormat GetImageFormat(string strPath)
         {
-            decimal desWidth; decimal desHeight;
-            int imgWidth = width;
-            int imgHeight = height;
+            if (strPath.EndsWith(".bmp", StringComparison.OrdinalIgnoreCase))
+                return ImageFormat.Bmp;
+            else if (strPath.EndsWith(".ico", StringComparison.OrdinalIgnoreCase))
+                return ImageFormat.Icon;
+            else if (strPath.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase))
+                return ImageFormat.Jpeg;
+            else if (strPath.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
+                return ImageFormat.Png;
+            else if (strPath.EndsWith(".gif", StringComparison.OrdinalIgnoreCase))
+                return ImageFormat.Gif;
+            else if (strPath.EndsWith(".tiff", StringComparison.OrdinalIgnoreCase))
+                return ImageFormat.Tiff;
 
-            decimal radioAct = (decimal)img.Width / (decimal)img.Height;
-            decimal radioLoc = (decimal)imgWidth / (decimal)imgHeight;
-            if (radioAct > radioLoc)                                                       
-            {
-                decimal dcmZoom = (decimal)imgWidth / (decimal)img.Width;
-                desHeight = img.Height * dcmZoom;
-                desWidth = imgWidth;
-            }
-            else
-            {
-                decimal dcmZoom = (decimal)imgHeight / (decimal)img.Height;
-                desWidth = img.Width * dcmZoom;
-                desHeight = imgHeight;
-            }
-
-            destWidth = (int)desWidth;
-            destHeight = (int)desHeight;
+            return null;
         }
-
         private void SaveFileButton_Click(object sender, EventArgs e)
         {
             SaveFileDialog dlg = new SaveFileDialog();
-            dlg.Filter = "Bitmap files|*.bmp|Jpeg files|*.jpg|PNG files|*.png|GIF Files|*.gif";
+            dlg.Filter = "Bitmap files|*.bmp|Jpeg files|*.jpg|PNG files|*.png|GIF Files|*.gif|TIFF Files|*.tiff";
             if (dlg.ShowDialog() != DialogResult.OK)
                 return;
 
@@ -260,7 +295,7 @@ namespace MergeImage
 
         private void UpButton_Click(object sender, EventArgs e)
         {
-            if (InListBox.SelectedIndex == 0)
+            if (InListBox.SelectedIndex == 0 || InListBox.SelectedIndex == -1)
                 return;
 
             int nSelect = InListBox.SelectedIndex;
@@ -271,7 +306,7 @@ namespace MergeImage
 
         private void DownButton_Click(object sender, EventArgs e)
         {
-            if (InListBox.SelectedIndex == InListBox.Items.Count - 1)
+            if (InListBox.SelectedIndex == InListBox.Items.Count - 1 || InListBox.SelectedIndex == -1)
                 return;
 
             int nSelect = InListBox.SelectedIndex;
@@ -293,16 +328,61 @@ namespace MergeImage
                 e.Effect = DragDropEffects.None;
         }
 
-        private void AutoZoomInCheckBox_CheckedChanged(object sender, EventArgs e)
+        private void ForceSizeRadioButton_CheckedChanged(object sender, EventArgs e)
         {
-            if (AutoZoomInCheckBox.Checked)
-                AutoZoomOutCheckBox.Checked = false;
+            if (ForceSizeRadioButton.Checked == true)
+            {
+                WidthTextBox.Enabled = true;
+                HeightTextBox.Enabled = true;
+            }
+            else
+            {
+                WidthTextBox.Enabled = false;
+                HeightTextBox.Enabled = false;
+            }
         }
 
-        private void AutoZoomOutCheckBox_CheckedChanged(object sender, EventArgs e)
+        private Bitmap IconToAlphaBitmap(Icon ico)
         {
-            if (AutoZoomOutCheckBox.Checked)
-                AutoZoomInCheckBox.Checked = false;
+            ICONINFO ii = new ICONINFO();
+            GetIconInfo(ico.Handle, out ii);
+            Bitmap bmp = Bitmap.FromHbitmap(ii.hbmColor);
+            DeleteObject(ii.hbmColor);
+            DeleteObject(ii.hbmMask);
+
+            if (Bitmap.GetPixelFormatSize(bmp.PixelFormat) < 32)
+                return ico.ToBitmap();
+
+            BitmapData bmData;
+            Rectangle bmBounds = new Rectangle(0,0,bmp.Width,bmp.Height);
+
+            bmData = bmp.LockBits(bmBounds,ImageLockMode.ReadOnly, bmp.PixelFormat);
+                    
+            Bitmap dstBitmap=new Bitmap(bmData.Width, bmData.Height, bmData.Stride, PixelFormat.Format32bppArgb, bmData.Scan0);
+
+            bool IsAlphaBitmap = false;
+
+            for (int y=0; y <= bmData.Height-1; y++)
+            {
+                for (int x=0; x <= bmData.Width-1; x++)
+                {
+                    Color PixelColor = Color.FromArgb(Marshal.ReadInt32(bmData.Scan0, (bmData.Stride * y) + (4 * x)));
+                    if (PixelColor.A > 0 & PixelColor.A < 255)
+                    {
+                        IsAlphaBitmap = true;
+                        break;
+                    }
+                }
+                if (IsAlphaBitmap) break;
+            }
+
+            bmp.UnlockBits(bmData);
+
+            if (IsAlphaBitmap==true)
+                return new Bitmap(dstBitmap);
+            else
+                return new Bitmap(ico.ToBitmap());
+                  
         }
     }
 
@@ -310,8 +390,19 @@ namespace MergeImage
     {
         public int nWidth;
         public int nHeight;
-        public int nImageWidth;
         public int nImageCount;
+        public Size[] aImageSize;
         public Image[] aImages;
     }
+
+    public struct ICONINFO
+    {
+        public bool fIcon;
+        public int xHotspot;
+        public int yHotspot;
+        public IntPtr hbmMask;
+        public IntPtr hbmColor;
+    }
+
+
 }

@@ -44,8 +44,16 @@
             this.ColumnTextBox = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
-            this.AutoZoomInCheckBox = new System.Windows.Forms.CheckBox();
-            this.AutoZoomOutCheckBox = new System.Windows.Forms.CheckBox();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.OriginSizeRadioButton = new System.Windows.Forms.RadioButton();
+            this.AutoZoomOutRadioButton = new System.Windows.Forms.RadioButton();
+            this.AutoZoomInRadioButton = new System.Windows.Forms.RadioButton();
+            this.ForceSizeRadioButton = new System.Windows.Forms.RadioButton();
+            this.label5 = new System.Windows.Forms.Label();
+            this.label6 = new System.Windows.Forms.Label();
+            this.HeightTextBox = new System.Windows.Forms.TextBox();
+            this.WidthTextBox = new System.Windows.Forms.TextBox();
+            this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
             // InListBox
@@ -55,14 +63,14 @@
             this.InListBox.ItemHeight = 12;
             this.InListBox.Location = new System.Drawing.Point(132, 27);
             this.InListBox.Name = "InListBox";
-            this.InListBox.Size = new System.Drawing.Size(335, 172);
+            this.InListBox.Size = new System.Drawing.Size(335, 244);
             this.InListBox.TabIndex = 0;
             this.InListBox.DragDrop += new System.Windows.Forms.DragEventHandler(this.InListBox_DragDrop);
             this.InListBox.DragEnter += new System.Windows.Forms.DragEventHandler(this.InListBox_DragEnter);
             // 
             // AddButton
             // 
-            this.AddButton.Location = new System.Drawing.Point(230, 235);
+            this.AddButton.Location = new System.Drawing.Point(230, 306);
             this.AddButton.Name = "AddButton";
             this.AddButton.Size = new System.Drawing.Size(75, 23);
             this.AddButton.TabIndex = 1;
@@ -72,7 +80,7 @@
             // 
             // DeleteButton
             // 
-            this.DeleteButton.Location = new System.Drawing.Point(311, 235);
+            this.DeleteButton.Location = new System.Drawing.Point(311, 306);
             this.DeleteButton.Name = "DeleteButton";
             this.DeleteButton.Size = new System.Drawing.Size(75, 23);
             this.DeleteButton.TabIndex = 2;
@@ -82,7 +90,7 @@
             // 
             // UpButton
             // 
-            this.UpButton.Location = new System.Drawing.Point(230, 264);
+            this.UpButton.Location = new System.Drawing.Point(230, 335);
             this.UpButton.Name = "UpButton";
             this.UpButton.Size = new System.Drawing.Size(75, 23);
             this.UpButton.TabIndex = 3;
@@ -92,7 +100,7 @@
             // 
             // DownButton
             // 
-            this.DownButton.Location = new System.Drawing.Point(311, 264);
+            this.DownButton.Location = new System.Drawing.Point(311, 335);
             this.DownButton.Name = "DownButton";
             this.DownButton.Size = new System.Drawing.Size(75, 23);
             this.DownButton.TabIndex = 4;
@@ -102,7 +110,7 @@
             // 
             // ImportButton
             // 
-            this.ImportButton.Location = new System.Drawing.Point(392, 235);
+            this.ImportButton.Location = new System.Drawing.Point(392, 306);
             this.ImportButton.Name = "ImportButton";
             this.ImportButton.Size = new System.Drawing.Size(75, 23);
             this.ImportButton.TabIndex = 5;
@@ -112,7 +120,7 @@
             // 
             // SaveFileButton
             // 
-            this.SaveFileButton.Location = new System.Drawing.Point(392, 206);
+            this.SaveFileButton.Location = new System.Drawing.Point(392, 277);
             this.SaveFileButton.Name = "SaveFileButton";
             this.SaveFileButton.Size = new System.Drawing.Size(75, 23);
             this.SaveFileButton.TabIndex = 6;
@@ -122,7 +130,7 @@
             // 
             // MergeButton
             // 
-            this.MergeButton.Location = new System.Drawing.Point(14, 264);
+            this.MergeButton.Location = new System.Drawing.Point(14, 335);
             this.MergeButton.Name = "MergeButton";
             this.MergeButton.Size = new System.Drawing.Size(75, 23);
             this.MergeButton.TabIndex = 7;
@@ -141,7 +149,7 @@
             // 
             // OutTextBox
             // 
-            this.OutTextBox.Location = new System.Drawing.Point(65, 208);
+            this.OutTextBox.Location = new System.Drawing.Point(65, 279);
             this.OutTextBox.Name = "OutTextBox";
             this.OutTextBox.Size = new System.Drawing.Size(321, 21);
             this.OutTextBox.TabIndex = 9;
@@ -149,7 +157,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(12, 211);
+            this.label2.Location = new System.Drawing.Point(12, 282);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(47, 12);
             this.label2.TabIndex = 10;
@@ -157,7 +165,7 @@
             // 
             // ClearButton
             // 
-            this.ClearButton.Location = new System.Drawing.Point(392, 264);
+            this.ClearButton.Location = new System.Drawing.Point(392, 335);
             this.ClearButton.Name = "ClearButton";
             this.ClearButton.Size = new System.Drawing.Size(75, 23);
             this.ClearButton.TabIndex = 11;
@@ -201,36 +209,110 @@
             this.label4.TabIndex = 15;
             this.label4.Text = "Row";
             // 
-            // AutoZoomInCheckBox
+            // groupBox1
             // 
-            this.AutoZoomInCheckBox.AutoSize = true;
-            this.AutoZoomInCheckBox.Location = new System.Drawing.Point(14, 107);
-            this.AutoZoomInCheckBox.Name = "AutoZoomInCheckBox";
-            this.AutoZoomInCheckBox.Size = new System.Drawing.Size(96, 16);
-            this.AutoZoomInCheckBox.TabIndex = 18;
-            this.AutoZoomInCheckBox.Text = "Auto Zoom In";
-            this.AutoZoomInCheckBox.UseVisualStyleBackColor = true;
-            this.AutoZoomInCheckBox.CheckedChanged += new System.EventHandler(this.AutoZoomInCheckBox_CheckedChanged);
+            this.groupBox1.Controls.Add(this.OriginSizeRadioButton);
+            this.groupBox1.Controls.Add(this.AutoZoomOutRadioButton);
+            this.groupBox1.Controls.Add(this.AutoZoomInRadioButton);
+            this.groupBox1.Controls.Add(this.ForceSizeRadioButton);
+            this.groupBox1.Controls.Add(this.label5);
+            this.groupBox1.Controls.Add(this.label6);
+            this.groupBox1.Controls.Add(this.HeightTextBox);
+            this.groupBox1.Controls.Add(this.WidthTextBox);
+            this.groupBox1.Location = new System.Drawing.Point(14, 102);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(112, 164);
+            this.groupBox1.TabIndex = 21;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "Size";
             // 
-            // AutoZoomOutCheckBox
+            // OriginSizeRadioButton
             // 
-            this.AutoZoomOutCheckBox.AutoSize = true;
-            this.AutoZoomOutCheckBox.Enabled = false;
-            this.AutoZoomOutCheckBox.Location = new System.Drawing.Point(14, 133);
-            this.AutoZoomOutCheckBox.Name = "AutoZoomOutCheckBox";
-            this.AutoZoomOutCheckBox.Size = new System.Drawing.Size(102, 16);
-            this.AutoZoomOutCheckBox.TabIndex = 19;
-            this.AutoZoomOutCheckBox.Text = "Auto Zoom Out";
-            this.AutoZoomOutCheckBox.UseVisualStyleBackColor = true;
-            this.AutoZoomOutCheckBox.CheckedChanged += new System.EventHandler(this.AutoZoomOutCheckBox_CheckedChanged);
+            this.OriginSizeRadioButton.AutoSize = true;
+            this.OriginSizeRadioButton.Checked = true;
+            this.OriginSizeRadioButton.Location = new System.Drawing.Point(4, 20);
+            this.OriginSizeRadioButton.Name = "OriginSizeRadioButton";
+            this.OriginSizeRadioButton.Size = new System.Drawing.Size(89, 16);
+            this.OriginSizeRadioButton.TabIndex = 28;
+            this.OriginSizeRadioButton.TabStop = true;
+            this.OriginSizeRadioButton.Text = "Origin Size";
+            this.OriginSizeRadioButton.UseVisualStyleBackColor = true;
+            // 
+            // AutoZoomOutRadioButton
+            // 
+            this.AutoZoomOutRadioButton.AutoSize = true;
+            this.AutoZoomOutRadioButton.Location = new System.Drawing.Point(4, 66);
+            this.AutoZoomOutRadioButton.Name = "AutoZoomOutRadioButton";
+            this.AutoZoomOutRadioButton.Size = new System.Drawing.Size(101, 16);
+            this.AutoZoomOutRadioButton.TabIndex = 27;
+            this.AutoZoomOutRadioButton.Text = "Auto Zoom Out";
+            this.AutoZoomOutRadioButton.UseVisualStyleBackColor = true;
+            // 
+            // AutoZoomInRadioButton
+            // 
+            this.AutoZoomInRadioButton.AutoSize = true;
+            this.AutoZoomInRadioButton.Location = new System.Drawing.Point(4, 44);
+            this.AutoZoomInRadioButton.Name = "AutoZoomInRadioButton";
+            this.AutoZoomInRadioButton.Size = new System.Drawing.Size(95, 16);
+            this.AutoZoomInRadioButton.TabIndex = 26;
+            this.AutoZoomInRadioButton.Text = "Auto Zoom In";
+            this.AutoZoomInRadioButton.UseVisualStyleBackColor = true;
+            // 
+            // ForceSizeRadioButton
+            // 
+            this.ForceSizeRadioButton.AutoSize = true;
+            this.ForceSizeRadioButton.Location = new System.Drawing.Point(4, 88);
+            this.ForceSizeRadioButton.Name = "ForceSizeRadioButton";
+            this.ForceSizeRadioButton.Size = new System.Drawing.Size(83, 16);
+            this.ForceSizeRadioButton.TabIndex = 22;
+            this.ForceSizeRadioButton.Text = "Force Size";
+            this.ForceSizeRadioButton.UseVisualStyleBackColor = true;
+            this.ForceSizeRadioButton.CheckedChanged += new System.EventHandler(this.ForceSizeRadioButton_CheckedChanged);
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(2, 140);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(41, 12);
+            this.label5.TabIndex = 25;
+            this.label5.Text = "Height";
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(5, 113);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(35, 12);
+            this.label6.TabIndex = 24;
+            this.label6.Text = "Width";
+            // 
+            // HeightTextBox
+            // 
+            this.HeightTextBox.Enabled = false;
+            this.HeightTextBox.Location = new System.Drawing.Point(45, 137);
+            this.HeightTextBox.Name = "HeightTextBox";
+            this.HeightTextBox.Size = new System.Drawing.Size(62, 21);
+            this.HeightTextBox.TabIndex = 23;
+            this.HeightTextBox.Text = "48";
+            this.HeightTextBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            // 
+            // WidthTextBox
+            // 
+            this.WidthTextBox.Enabled = false;
+            this.WidthTextBox.Location = new System.Drawing.Point(45, 110);
+            this.WidthTextBox.Name = "WidthTextBox";
+            this.WidthTextBox.Size = new System.Drawing.Size(62, 21);
+            this.WidthTextBox.TabIndex = 22;
+            this.WidthTextBox.Text = "48";
+            this.WidthTextBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             // 
             // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(479, 297);
-            this.Controls.Add(this.AutoZoomOutCheckBox);
-            this.Controls.Add(this.AutoZoomInCheckBox);
+            this.ClientSize = new System.Drawing.Size(479, 366);
+            this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.ColumnTextBox);
@@ -249,6 +331,8 @@
             this.Controls.Add(this.InListBox);
             this.Name = "FormMain";
             this.Text = "MergeImage";
+            this.groupBox1.ResumeLayout(false);
+            this.groupBox1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -272,8 +356,15 @@
         private System.Windows.Forms.TextBox ColumnTextBox;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.CheckBox AutoZoomInCheckBox;
-        private System.Windows.Forms.CheckBox AutoZoomOutCheckBox;
+        private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.TextBox HeightTextBox;
+        private System.Windows.Forms.TextBox WidthTextBox;
+        private System.Windows.Forms.RadioButton AutoZoomOutRadioButton;
+        private System.Windows.Forms.RadioButton AutoZoomInRadioButton;
+        private System.Windows.Forms.RadioButton ForceSizeRadioButton;
+        private System.Windows.Forms.RadioButton OriginSizeRadioButton;
     }
 }
 
